@@ -1,32 +1,76 @@
-var express = require('express'),
-    request = require('request'),
-    bodyParser = require('body-parser'),
-    app = express();
+const express = require('express')
+const app = express()
+const axios = require('axios')
+fs = require('fs');
+var parser = require('xml2json');
 
-app.all('*', function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
-    res.header("Access-Control-Allow-Headers", req.header('access-control-request-headers'));
+let listOfDrones = []
 
-    if (req.method === 'OPTIONS') {
-        res.send();
-    } else {
-        var targetURL = req.header('Target-URL');
-        if (!targetURL) {
-            res.send(500, { error: 'There is no Target-Endpoint header in the request' });
-            return;
+setInterval(() => {
+    getData()
+  }, 2000)
+
+const doesInclude = (serialNumber, list) => {
+    for (const i in list) {
+        if (list[i].serialNumber === serialNumber){
+            return true
         }
-        request({ url: targetURL + req.url, method: req.method, json: req.body, headers: {'Authorization': req.header('Authorization')} },
-            function (error, response, body) {
-                if (error) {
-                    console.error('error: ' + response.statusCode)
-                }
-            }).pipe(res);
     }
-});
+}
 
-app.set('port', process.env.PORT || 3001);
+const getDistance = (x,y) => {
+    const distance = Math.sqrt(Math.pow((x - 250000), 2) + Math.pow((y - 250000), 2))
+    return distance
+}
 
-app.listen(app.get('port'), function () {
-    console.log('Proxy server listening on port ' + app.get('port'));
-});
+const isDistanceGreater = (serialNumber, distance, list) => {
+    for (const i in list) {
+        if (list[i].serialNumber === serialNumber && list[i].distance > distance){
+            return i
+        }
+    }
+}
+
+const getData = async () => {
+    const request = await axios.get('https://assignments.reaktor.com/birdnest/drones')
+    fs.readFile( './data.xml', async function(err, data) {
+    var json = parser.toJson(request.data);
+    var drones = JSON.parse(json).report.capture.drone
+    for (const i in drones) {
+        const distance = getDistance(drones[i].positionX, drones[i].positionY)
+        const serialNumber = drones[i].serialNumber
+        if (!(doesInclude(serialNumber, listOfDrones)) && distance < 100000) {
+            pilotData = await axios.get(`https://assignments.reaktor.com/birdnest/pilots/${serialNumber}`)
+            pilot = pilotData.data
+            const data = {
+                serialNumber: drones[i].serialNumber,
+                distance: distance,
+                FirstName: pilot.firstName,
+                LastName: pilot.lastName,
+                email: pilot.email,
+                number: pilot.phoneNumber
+            }
+            listOfDrones.push(data)
+        } else if (isDistanceGreater(serialNumber, distance, listOfDrones) != null) {
+            const data = {
+                serialNumber: drones[i].serialNumber,
+                distance: distance,
+                FirstName: pilot.firstName,
+                LastName: pilot.lastName,
+                email: pilot.email,
+                number: pilot.phoneNumber
+            }
+            const index = isDistanceGreater(serialNumber, distance, listOfDrones)
+            listOfDrones[index].distance = distance
+        }
+    }
+})}
+
+app.get('/', async (req, res) => {
+    res.send(listOfDrones)
+})
+
+const PORT = 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
