@@ -5,22 +5,22 @@ const dronesRouter = require('express').Router()
 const helpers = require('../utils/helpers')
 
 const listOfDrones = []
+let time
 
 /**
  * Interval so we update the data from the server every 2 seconds.
  */
 setInterval(() => {
-  getData()
+  getData(listOfDrones, time)
   filterData()
 }, 2000)
 
 /**
  * Check if an drone has been in the list for over 10 minutes, if true delete the drone from the list
  */
-const filterData = () => {
+const filterData = (listOfDrones, time) => {
   for (const i in listOfDrones) {
-    const time = Number(listOfDrones[i].time.split(':')[1])
-    if ((time + 10) % 60 > time) {
+    if ((listOfDrones[i].time + 10) % 60 < time) {
       listOfDrones.splice(i, 1)
     }
   }
@@ -36,8 +36,8 @@ const getData = async () => {
   fs.readFile('./data.xml', async function () {
     const json = parser.toJson(request.data)
     let drones = JSON.parse(json).report.capture
-    let time = drones.snapshotTimestamp
-    time = time.split('T')[1].split('.')[0]
+    time = drones.snapshotTimestamp
+    time = time.split('T')[1].split('.')[0].split(':')[1]
     drones = drones.drone
     for (const i in drones) {
       const distance = helpers.getDistance(drones[i].positionX, drones[i].positionY)
@@ -74,4 +74,4 @@ dronesRouter.get('/', async (req, res) => {
   res.send(listOfDrones)
 })
 
-module.exports = dronesRouter
+module.exports = { dronesRouter, filterData }

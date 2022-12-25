@@ -10,6 +10,7 @@ const doesInclude = (serialNumber, list) => {
       return true
     }
   }
+  return false
 }
 
 /**
@@ -37,6 +38,7 @@ const isDistanceGreater = (serialNumber, distance, list) => {
       return i
     }
   }
+  return false
 }
 
 module.exports = { doesInclude, getDistance, isDistanceGreater }
