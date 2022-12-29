@@ -21,8 +21,13 @@ setInterval(() => {
 const filterData = (listOfDrones, time) => {
   for (const i in listOfDrones) {
     const timeOfDetection = Number(listOfDrones[i].time.split(':')[1])
-    const timeNow = Number(time.split(':')[1])
-    if ((timeOfDetection + 10) % 60 <= timeNow) {
+    const detectionHour = Number(listOfDrones[i].time.split(':')[0])
+    let timeNow = Number(time.split(':')[1])
+    const hour = Number(time.split(':')[0])
+    if (detectionHour !== hour) {
+      timeNow += 60
+    }
+    if (timeNow - timeOfDetection > 10) {
       listOfDrones.splice(i, 1)
     }
   }
@@ -54,8 +59,8 @@ const getData = async () => {
           distance,
           positionX: drones[i].positionX,
           positionY: drones[i].positionY,
-          FirstName: pilot.firstName,
-          LastName: pilot.lastName,
+          firstName: pilot.firstName,
+          lastName: pilot.lastName,
           email: pilot.email,
           number: pilot.phoneNumber,
           time
