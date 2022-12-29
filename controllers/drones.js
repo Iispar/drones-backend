@@ -12,7 +12,7 @@ let time
  */
 setInterval(() => {
   getData(listOfDrones, time)
-  filterData()
+  filterData(listOfDrones, time)
 }, 2000)
 
 /**
@@ -20,7 +20,9 @@ setInterval(() => {
  */
 const filterData = (listOfDrones, time) => {
   for (const i in listOfDrones) {
-    if ((listOfDrones[i].time + 10) % 60 < time) {
+    const timeOfDetection = Number(listOfDrones[i].time.split(':')[1])
+    const timeNow = Number(time.split(':')[1])
+    if ((timeOfDetection + 10) % 60 <= timeNow) {
       listOfDrones.splice(i, 1)
     }
   }
@@ -37,7 +39,7 @@ const getData = async () => {
     const json = parser.toJson(request.data)
     let drones = JSON.parse(json).report.capture
     time = drones.snapshotTimestamp
-    time = time.split('T')[1].split('.')[0].split(':')[1]
+    time = time.split('T')[1].split('.')[0]
     drones = drones.drone
     for (const i in drones) {
       const distance = helpers.getDistance(drones[i].positionX, drones[i].positionY)
@@ -50,6 +52,8 @@ const getData = async () => {
         const data = {
           serialNumber: drones[i].serialNumber,
           distance,
+          positionX: drones[i].positionX,
+          positionY: drones[i].positionY,
           FirstName: pilot.firstName,
           LastName: pilot.lastName,
           email: pilot.email,
@@ -59,7 +63,7 @@ const getData = async () => {
         listOfDrones.push(data)
 
       // if the pilot is already in the list
-      } else if (helpers.isDistanceGreater(serialNumber, distance, listOfDrones) != null) {
+      } else if (helpers.isDistanceGreater(serialNumber, distance, listOfDrones) !== false) {
         const index = helpers.isDistanceGreater(serialNumber, distance, listOfDrones)
         listOfDrones[index].distance = distance
       }
@@ -74,4 +78,4 @@ dronesRouter.get('/', async (req, res) => {
   res.send(listOfDrones)
 })
 
-module.exports = { dronesRouter, filterData }
+module.exports = dronesRouter
