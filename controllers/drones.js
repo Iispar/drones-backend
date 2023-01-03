@@ -71,6 +71,8 @@ const getData = async () => {
       } else if (helpers.isDistanceGreater(serialNumber, distance, listOfDrones) !== false) {
         const index = helpers.isDistanceGreater(serialNumber, distance, listOfDrones)
         listOfDrones[index].distance = distance
+        listOfDrones[index].positionX = drones[i].positionX
+        listOfDrones[index].positionY = drones[i].positionY
       }
     }
   })
