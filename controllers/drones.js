@@ -52,20 +52,36 @@ const getData = async () => {
       // if the pilot isn't already in the list and is violating the boarder
       if (!(helpers.doesInclude(serialNumber, listOfDrones)) && distance < 100000) {
         // get pilots information from the address. Only do this if the pilot is violating the boarder.
-        const pilotData = await axios.get(`https://assignments.reaktor.com/birdnest/pilots/${serialNumber}`)
-        const pilot = pilotData.data
-        const data = {
-          serialNumber: drones[i].serialNumber,
-          distance,
-          positionX: drones[i].positionX,
-          positionY: drones[i].positionY,
-          firstName: pilot.firstName,
-          lastName: pilot.lastName,
-          email: pilot.email,
-          number: pilot.phoneNumber,
-          time
+        try {
+          const pilotData = await axios.get(`https://assignments.reaktor.com/birdnest/pilots/${serialNumber}`)
+          const pilot = pilotData.data
+          const data = {
+            serialNumber: drones[i].serialNumber,
+            distance,
+            positionX: drones[i].positionX,
+            positionY: drones[i].positionY,
+            firstName: pilot.firstName,
+            lastName: pilot.lastName,
+            email: pilot.email,
+            number: pilot.phoneNumber,
+            time
+          }
+          listOfDrones.push(data)
+        } catch (err) {
+          console.log(err.response.data)
+          const data = {
+            serialNumber: drones[i].serialNumber,
+            distance,
+            positionX: drones[i].positionX,
+            positionY: drones[i].positionY,
+            firstName: 'first name not found',
+            lastName: 'last name not found',
+            email: 'email not found',
+            number: 'number not found',
+            time
+          }
+          listOfDrones.push(data)
         }
-        listOfDrones.push(data)
 
       // if the pilot is already in the list
       } else if (helpers.isDistanceGreater(serialNumber, distance, listOfDrones) !== false) {
