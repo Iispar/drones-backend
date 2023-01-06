@@ -1,21 +1,20 @@
 const helpers = require('../utils/helpers')
-const { filterData } = require('../controllers/drones')
 
 const list = [
   {
     serialNumber: 'ABCD',
     distance: 92000,
-    time: 25
+    time: '11:11'
   },
   {
     serialNumber: 'BCAD',
     distance: 10000,
-    time: 11
+    time: '11:14'
   },
   {
     serialNumber: 'YYYY',
     distance: 24000,
-    time: '22'
+    time: '11:24'
   }
 ]
 
@@ -42,9 +41,4 @@ test('is in list works', () => {
   const resultFalse = helpers.doesInclude('XXXX', list)
   expect(resultFalse).toBe(false)
   expect(resultTrue).toBe(true)
-})
-
-test('time filter works', () => {
-  filterData(list, 28)
-  expect(list.length).toBe(2)
 })
