@@ -38,6 +38,7 @@ const filterData = (listOfDrones, time) => {
  * We also update the distance if the pilot is already in the list.
  */
 const getData = async () => {
+  // get raw data from the API
   const request = await axios.get('https://assignments.reaktor.com/birdnest/drones')
   // to access the xml data we format it to JSON.
   fs.readFile('./data.xml', async function () {
@@ -52,6 +53,7 @@ const getData = async () => {
       // if the pilot isn't already in the list and is violating the boarder
       if (!(helpers.doesInclude(serialNumber, listOfDrones)) && distance < 100000) {
         // get pilots information from the address. Only do this if the pilot is violating the boarder.
+        // use a try catch to catch if getting the pilots data returns a error.
         try {
           const pilotData = await axios.get(`https://assignments.reaktor.com/birdnest/pilots/${serialNumber}`)
           const pilot = pilotData.data
@@ -83,7 +85,7 @@ const getData = async () => {
           listOfDrones.push(data)
         }
 
-      // if the pilot is already in the list
+      // if the pilot is already in the list we just update the location and distance.
       } else if (helpers.isDistanceGreater(serialNumber, distance, listOfDrones) !== false) {
         const index = helpers.isDistanceGreater(serialNumber, distance, listOfDrones)
         listOfDrones[index].distance = distance
