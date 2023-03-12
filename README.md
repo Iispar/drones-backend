@@ -1,5 +1,5 @@
-# reaktorTaskBackend
-This is the backend for the pre-requisite task for Reaktors job listing. In this project I access the data from the 3rd
+# Drones
+In this project I access the data from the 3rd
 party API, filter it and create an API that can be called from the frontend.
 # Prerequisites and configurations
 If you want to run this from your own computer you just need to clone the repository, install with npm install and
